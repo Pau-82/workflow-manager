@@ -20,6 +20,9 @@
     },
     {
       "path": "./libs/modules/alerts"
+    },
+    {
+      "path": "./libs/modules/notifications"
     }
   ]
 }

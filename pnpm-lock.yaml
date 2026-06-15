@@ -213,6 +213,8 @@ importers:
 
   libs/modules/alerts: {}
 
+  libs/modules/notifications: {}
+
   libs/modules/workflows: {}
 
   libs/shared: {}

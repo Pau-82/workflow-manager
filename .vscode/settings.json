@@ -1,0 +1,29 @@
+{
+  // Oculta del explorador los artefactos generados (no son código fuente).
+  // Todos están gitignorados; esto es solo cosmético para el árbol del editor.
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/out-tsc": true,
+    "**/.next": true,
+    "**/.nx": true,
+    "**/*.tsbuildinfo": true
+  },
+  // No los busca con Ctrl+Shift+F (más rápido y sin ruido).
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/out-tsc": true,
+    "**/.next": true,
+    "**/.nx": true,
+    "**/pnpm-lock.yaml": true
+  },
+  // No los vigila el file watcher (menos CPU/RAM).
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/out-tsc/**": true,
+    "**/.next/**": true,
+    "**/.nx/**": true
+  }
+}

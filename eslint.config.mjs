@@ -26,11 +26,17 @@ export default [
                 'type:util',
               ],
             },
-            // Los módulos (vertical slices) solo dependen de contracts y shared.
-            // No dependen de apps ni de otros módulos (referencias entre agregados por ID).
+            // Los módulos (vertical slices) pueden depender de otros módulos
+            // (colaboración por puertos, p. ej. alerts → workflows/notifications),
+            // contracts y shared. La DIRECCIÓN permitida la fija el `scope` de abajo
+            // (evita ciclos: workflows no puede depender de alerts, etc.).
             {
               sourceTag: 'type:feature',
-              onlyDependOnLibsWithTags: ['type:contracts', 'type:util'],
+              onlyDependOnLibsWithTags: [
+                'type:feature',
+                'type:contracts',
+                'type:util',
+              ],
             },
             // Contracts (schemas Zod + DTOs) solo puede apoyarse en utilidades compartidas.
             {
@@ -52,10 +58,24 @@ export default [
                 'scope:shared',
               ],
             },
+            // alerts orquesta el disparo: necesita workflows (Workflow + repo) y
+            // notifications (puerto NotificationCreator). Depende de ambos.
             {
               sourceTag: 'scope:alerts',
               onlyDependOnLibsWithTags: [
                 'scope:alerts',
+                'scope:workflows',
+                'scope:notifications',
+                'scope:contracts',
+                'scope:shared',
+              ],
+            },
+            // notifications es módulo hoja: nadie del dominio depende hacia afuera
+            // salvo contracts/shared (a alerts lo expone vía su puerto, no al revés).
+            {
+              sourceTag: 'scope:notifications',
+              onlyDependOnLibsWithTags: [
+                'scope:notifications',
                 'scope:contracts',
                 'scope:shared',
               ],
@@ -75,6 +95,7 @@ export default [
                 'scope:api',
                 'scope:workflows',
                 'scope:alerts',
+                'scope:notifications',
                 'scope:contracts',
                 'scope:shared',
               ],

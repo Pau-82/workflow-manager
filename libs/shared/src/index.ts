@@ -1,4 +1,3 @@
-// Utilidades transversales compartidas (p. ej. la clase base `DomainError`).
-// Se completa en la Etapa 2:
-//   export * from './errors/domain.error.js';
-export {};
+// Public API de la lib compartida.
+export * from './domain/value-object/index.js';
+export * from './domain/errors/result/index.js';
