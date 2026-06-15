@@ -217,7 +217,14 @@ importers:
 
   libs/modules/workflows: {}
 
-  libs/shared: {}
+  libs/shared:
+    dependencies:
+      '@nestjs/common':
+        specifier: ^11.0.0
+        version: 11.1.26(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      reflect-metadata:
+        specifier: ^0.1.13
+        version: 0.1.14
 
 packages:
 
