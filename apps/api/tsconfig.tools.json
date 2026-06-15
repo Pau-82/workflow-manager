@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "types": ["node"],
+    "outDir": "dist/tools",
+    "rootDir": ".",
+    "tsBuildInfoFile": "dist/tsconfig.tools.tsbuildinfo"
+  },
+  "include": ["prisma.config.ts"]
+}

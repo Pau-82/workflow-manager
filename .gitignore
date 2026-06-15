@@ -1,0 +1,72 @@
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# ---- Documentación interna (no se sube) ----
+docs/
+
+# ---- Variables de entorno ----
+.env
+.env.local
+.env.*.local
+# se versiona el ejemplo
+!.env.example
+
+# compiled output
+dist
+tmp
+out-tsc
+build
+out
+
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+testem.log
+/typings
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# NX
+.nx/cache
+.nx/workspace-data
+.nx/polygraph
+.nx/self-healing
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+.claude/worktrees
+.claude/settings.local.json
+test-output
+
+# Next.js
+.next
+
+# Prisma
+# (las migraciones SÍ se versionan; nada que excluir por defecto)

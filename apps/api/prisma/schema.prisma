@@ -1,0 +1,116 @@
+// Persistencia — Prisma + PostgreSQL
+//
+// El modelo Prisma NO es el agregado: define tablas. El adaptador
+// (Prisma*Repository) traduce filas <-> agregados ricos.
+//
+// Las uniones discriminadas del dominio se APLANAN en columnas + discriminante
+// (no JSON), por transparencia e indexabilidad. La validez la garantiza el
+// dominio al reconstituir (fromPersistence), no la base.
+//
+// IMPORTANTE: el índice único parcial que implementa la regla de no-duplicados
+// (UNIQUE en AlertEvent(workflowId) WHERE status = 'abierto') no es expresable
+// declarativamente en Prisma -> se agrega como SQL manual en la migración.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Prisma 7: la URL de conexión vive en prisma.config.ts (datasource.url),
+  // no en el schema.
+}
+
+/// Configuración de una alerta: qué vigilar y cómo avisar.
+model Workflow {
+  id       String  @id @default(uuid())
+  name     String
+  isActive Boolean @default(false)
+
+  // --- TriggerCondition (VO) aplanado ---
+  // Discriminante: 'threshold' | 'variance'
+  triggerType String
+  // ThresholdTrigger: { metricName, operator, value }
+  metricName     String?
+  operator       String?
+  thresholdValue Float?
+  // VarianceTrigger: { baseValue, deviationPercent, direction }
+  baseValue        Float?
+  deviationPercent Float?
+  direction        String?
+
+  // --- MessageTemplate (VO) ---
+  messageTemplate String
+
+  // --- Relaciones ---
+  recipients Recipient[]
+  events     AlertEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Destinatario individual de un workflow (union discriminada por canal).
+model Recipient {
+  id         String   @id @default(uuid())
+  workflowId String
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // Discriminante: 'email' | 'in-app'
+  channel String
+  // String único: address (email) o target (in-app) según el canal.
+  destination String
+
+  @@index([workflowId])
+}
+
+/// Hecho histórico: un disparo que ocurrió. Snapshot inmutable.
+model AlertEvent {
+  id          String   @id @default(uuid())
+  workflowId  String
+  workflow    Workflow @relation(fields: [workflowId], references: [id])
+  triggeredAt DateTime @default(now())
+
+  // --- TriggerContext (VO) aplanado: snapshot congelado y auto-contenido ---
+  // Discriminante: 'threshold' | 'variance'
+  contextType String
+  // ThresholdContext: { metricName, operator, threshold, observedValue }
+  metricName String?
+  operator   String?
+  threshold  Float?
+  // VarianceContext: { baseValue, deviationPercent, direction, observedValue, actualDeviation }
+  baseValue        Float?
+  deviationPercent Float?
+  direction        String?
+  actualDeviation  Float?
+  // Común a ambas variantes.
+  observedValue Float
+
+  // Mensaje interpolado, congelado en el momento del disparo.
+  renderedMessage String
+
+  // --- Máquina de estados ---
+  status         String    @default("abierto") // 'abierto' | 'resuelto'
+  resolvedAt     DateTime?
+  resolutionNote String? // nota al resolver (extra), inmutable, máx 300
+
+  notifications Notification[]
+
+  // Índice único parcial (no-duplicados) en migración SQL manual:
+  //   UNIQUE (workflowId) WHERE status = 'abierto'
+  @@index([workflowId])
+  @@index([triggeredAt])
+}
+
+/// Notificación in-app persistida (el frontend la lee por pull, sin push).
+model Notification {
+  id           String     @id @default(uuid())
+  alertEventId String
+  alertEvent   AlertEvent @relation(fields: [alertEventId], references: [id], onDelete: Cascade)
+
+  target    String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([alertEventId])
+}
