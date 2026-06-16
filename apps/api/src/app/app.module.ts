@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import {
   ActivateWorkflowModule,
   CreateWorkflowModule,
+  DeactivateWorkflowModule,
   GetWorkflowModule,
   ListWorkflowsModule,
   UpdateWorkflowModule,
@@ -17,6 +18,7 @@ import { TrpcService } from '../trpc/trpc.service';
     ListWorkflowsModule,
     UpdateWorkflowModule,
     ActivateWorkflowModule,
+    DeactivateWorkflowModule,
   ],
   controllers: [AppController],
   providers: [AppService, TrpcService],

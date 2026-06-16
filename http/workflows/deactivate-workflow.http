@@ -1,0 +1,31 @@
+# Requests del caso de uso DeactivateWorkflow (tRPC MUTATION). Pone isActive=false.
+# Requiere la extensión "REST Client" (humao.rest-client): clic en "Send Request".
+# Levantá la API antes:  pnpm exec nx serve @org/api
+# Pegá un id real (de un create) en @id.
+
+@host = http://localhost:3001
+@id = 00000000-0000-4000-8000-000000000000
+
+### ✅ Desactivar (reemplazá @id por uno real) → 200 + DTO con "isActive": false
+POST {{host}}/trpc/workflow.deactivate
+Content-Type: application/json
+
+{
+  "id": "{{id}}"
+}
+
+### ❌ id inexistente → 404 NOT_FOUND
+POST {{host}}/trpc/workflow.deactivate
+Content-Type: application/json
+
+{
+  "id": "00000000-0000-4000-8000-000000000000"
+}
+
+### ❌ id vacío → 400 (lo frena Zod: min(1))
+POST {{host}}/trpc/workflow.deactivate
+Content-Type: application/json
+
+{
+  "id": ""
+}

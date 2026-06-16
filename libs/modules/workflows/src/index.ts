@@ -52,3 +52,9 @@ export * from './application/activate-workflow/activate-workflow.module.js';
 export * from './application/activate-workflow/interface/activate-workflow.input.dto.js';
 export * from './application/activate-workflow/interface/activate-workflow.output.dto.js';
 export * from './application/activate-workflow/errors/activate-workflow.error.js';
+
+export * from './application/deactivate-workflow/deactivate-workflow.handler.js';
+export * from './application/deactivate-workflow/deactivate-workflow.module.js';
+export * from './application/deactivate-workflow/interface/deactivate-workflow.input.dto.js';
+export * from './application/deactivate-workflow/interface/deactivate-workflow.output.dto.js';
+export * from './application/deactivate-workflow/errors/deactivate-workflow.error.js';
