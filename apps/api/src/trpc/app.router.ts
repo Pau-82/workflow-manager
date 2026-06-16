@@ -3,13 +3,18 @@ import {
   createWorkflowRouter,
   type WorkflowRouterDeps,
 } from './routers/workflow.router';
+import {
+  createEventRouter,
+  type EventRouterDeps,
+} from './routers/event.router';
 
-export type AppRouterDeps = WorkflowRouterDeps;
+export type AppRouterDeps = WorkflowRouterDeps & EventRouterDeps;
 
 /** appRouter raíz: combina los routers de cada módulo. */
 export function createAppRouter(deps: AppRouterDeps) {
   return router({
     workflow: createWorkflowRouter(deps),
+    event: createEventRouter(deps),
   });
 }
 

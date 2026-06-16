@@ -48,4 +48,14 @@ export default [
       ],
     },
   },
+
+  // Excepción: los *.module.ts son el composition root del slice (wiring de DI).
+  // Ahí SÍ se unen puerto (domain) y adaptador (infrastructure); el handler/lógica
+  // sigue dependiendo solo del puerto.
+  {
+    files: ['**/*.module.ts'],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
 ];

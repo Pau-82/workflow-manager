@@ -24,7 +24,8 @@ export default defineConfig({
   },
   migrations: {
     path: 'prisma/migrations',
-    // Seed de datos de ejemplo (Etapa 7).
-    seed: 'ts-node prisma/seed.ts',
+    // Seed de datos de ejemplo. tsconfig dedicado (CJS + transpileOnly) para que
+    // ts-node lo corra sin pelearse con la config nodenext del monorepo.
+    seed: 'ts-node --project prisma/tsconfig.seed.json prisma/seed.ts',
   },
 });
