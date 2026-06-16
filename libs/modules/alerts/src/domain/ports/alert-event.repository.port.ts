@@ -34,6 +34,12 @@ export interface IAlertEventRepository {
   /** Afirmativo: devuelve `Result.fail(AlertEventNotFoundError)` si no existe. */
   getById(id: string): Promise<Result<AlertEvent, LayeredError>>;
 
+  /**
+   * Inserta un evento nuevo. Acepta un cliente transaccional OPACO opcional (`tx`)
+   * para participar de un UnitOfWork externo (lo usa SimulateTrigger en el V10).
+   */
+  save(event: AlertEvent, tx?: unknown): Promise<void>;
+
   /** Persiste los cambios de un evento existente (hoy, su estado de resolución). */
   update(event: AlertEvent): Promise<void>;
 }

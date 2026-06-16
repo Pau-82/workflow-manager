@@ -3,4 +3,5 @@
 export * from './domain/value-object/index.js';
 export * from './domain/errors/result/index.js';
 export * from './domain/ports/logger.port.js';
+export * from './domain/ports/unit-of-work.port.js';
 export * from './domain/utils/assert-never.js';

@@ -4,3 +4,5 @@
 export * from './logger/index.js';
 export * from './prisma/prisma.service.js';
 export * from './prisma/prisma.module.js';
+export * from './unit-of-work/prisma-unit-of-work.js';
+export * from './unit-of-work/unit-of-work.module.js';

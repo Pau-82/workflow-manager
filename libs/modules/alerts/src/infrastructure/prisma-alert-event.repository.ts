@@ -73,6 +73,13 @@ export class PrismaAlertEventRepository implements IAlertEventRepository {
   //#endregion
 
   //#region writes
+  async save(event: AlertEvent, tx?: unknown): Promise<void> {
+    const db = (tx as PrismaTransactionClient | undefined) ?? this.prisma;
+    await db.alertEvent.create({
+      data: PrismaAlertEventRepository.toCreateInput(event),
+    });
+  }
+
   async update(event: AlertEvent, tx?: PrismaTransactionClient): Promise<void> {
     const db = tx ?? this.prisma;
     await db.alertEvent.update({
@@ -88,6 +95,61 @@ export class PrismaAlertEventRepository implements IAlertEventRepository {
   //#endregion
 
   //#region mapping (modelo Prisma <-> agregado)
+  private static toCreateInput(
+    event: AlertEvent,
+  ): Prisma.AlertEventUncheckedCreateInput {
+    return {
+      id: event.id,
+      workflowId: event.workflowId,
+      triggeredAt: event.triggeredAt,
+      ...PrismaAlertEventRepository.flattenContext(event.triggerContext),
+      renderedMessage: event.renderedMessage,
+      status: event.status,
+      resolvedAt: event.resolvedAt,
+      resolutionNote: event.resolutionNote,
+    };
+  }
+
+  private static flattenContext(
+    context: AlertEvent['triggerContext'],
+  ): Pick<
+    Prisma.AlertEventUncheckedCreateInput,
+    | 'contextType'
+    | 'metricName'
+    | 'operator'
+    | 'threshold'
+    | 'baseValue'
+    | 'deviationPercent'
+    | 'direction'
+    | 'actualDeviation'
+    | 'observedValue'
+  > {
+    if (context.type === 'threshold') {
+      return {
+        contextType: 'threshold',
+        metricName: context.metricName,
+        operator: context.operator,
+        threshold: context.threshold,
+        observedValue: context.observedValue,
+        baseValue: null,
+        deviationPercent: null,
+        direction: null,
+        actualDeviation: null,
+      };
+    }
+    return {
+      contextType: 'variance',
+      baseValue: context.baseValue,
+      deviationPercent: context.deviationPercent,
+      direction: context.direction,
+      actualDeviation: context.actualDeviation,
+      observedValue: context.observedValue,
+      metricName: null,
+      operator: null,
+      threshold: null,
+    };
+  }
+
   private static toWhere(
     filters: EventHistoryFilters,
   ): Prisma.AlertEventWhereInput {
