@@ -23,6 +23,10 @@ const prisma = new PrismaClient({ adapter: new PrismaPg(connectionString) });
 const WF_CPU_ID = '11111111-1111-4111-8111-111111111111';
 const WF_VAR_ID = '22222222-2222-4222-8222-222222222222';
 
+// IDs fijos de algunos eventos CPU (in-app) para asociarles notificaciones.
+const EVENT_CPU_2 = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const EVENT_CPU_OPEN = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
 async function main(): Promise<void> {
   // Idempotente: limpiamos en orden de dependencias.
   await prisma.notification.deleteMany();
@@ -79,6 +83,7 @@ async function main(): Promise<void> {
         resolutionNote: 'Pico transitorio, normalizado.',
       },
       {
+        id: EVENT_CPU_2,
         workflowId: WF_CPU_ID,
         triggeredAt: new Date('2026-06-02T08:00:00Z'),
         contextType: 'threshold',
@@ -118,6 +123,7 @@ async function main(): Promise<void> {
         status: 'abierto',
       },
       {
+        id: EVENT_CPU_OPEN,
         workflowId: WF_CPU_ID,
         triggeredAt: new Date('2026-06-05T08:00:00Z'),
         contextType: 'threshold',
@@ -131,11 +137,33 @@ async function main(): Promise<void> {
     ],
   });
 
-  const [workflows, events] = await Promise.all([
+  // --- Notifications in-app (las generaría SimulateTrigger; acá van de ejemplo) ---
+  // Asociadas a eventos del workflow CPU, cuyo recipient in-app es 'guardia'.
+  await prisma.notification.createMany({
+    data: [
+      {
+        alertEventId: EVENT_CPU_2,
+        target: 'guardia',
+        message: 'CPU al 95%',
+        createdAt: new Date('2026-06-02T08:00:01Z'),
+      },
+      {
+        alertEventId: EVENT_CPU_OPEN,
+        target: 'guardia',
+        message: 'CPU al 99%',
+        createdAt: new Date('2026-06-05T08:00:01Z'),
+      },
+    ],
+  });
+
+  const [workflows, events, notifications] = await Promise.all([
     prisma.workflow.count(),
     prisma.alertEvent.count(),
+    prisma.notification.count(),
   ]);
-  console.log(`Seed OK: ${workflows} workflows, ${events} alert events.`);
+  console.log(
+    `Seed OK: ${workflows} workflows, ${events} alert events, ${notifications} notifications.`,
+  );
 }
 
 main()

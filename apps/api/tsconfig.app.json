@@ -28,6 +28,9 @@
       "path": "../../libs/shared/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/modules/notifications/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/contracts/tsconfig.lib.json"
     },
     {

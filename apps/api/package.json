@@ -92,6 +92,7 @@
     "@nestjs/platform-express": "^11.0.0",
     "@org/alerts": "workspace:*",
     "@org/contracts": "workspace:*",
+    "@org/notifications": "workspace:*",
     "@org/shared": "workspace:*",
     "@org/workflows": "workspace:*",
     "@prisma/client": "^7.8.0",

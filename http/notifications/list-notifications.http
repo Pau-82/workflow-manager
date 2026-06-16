@@ -1,0 +1,8 @@
+# Requests del caso de uso ListNotifications (tRPC QUERY, sin input).
+# Requiere la extensión "REST Client" (humao.rest-client): clic en "Send Request".
+# Levantá la API y corré el seed antes:  pnpm exec nx serve @org/api  /  pnpm seed
+
+@host = http://localhost:3001
+
+### ✅ Listar todas las notificaciones in-app (orden DESC por createdAt)
+GET {{host}}/trpc/notification.list
