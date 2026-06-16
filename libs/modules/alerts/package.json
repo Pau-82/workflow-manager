@@ -18,7 +18,9 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.1.26",
+    "@org/notifications": "workspace:*",
     "@org/shared": "workspace:*",
+    "@org/workflows": "workspace:*",
     "@prisma/client": "^7.8.0",
     "reflect-metadata": "^0.1.14"
   }

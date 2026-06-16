@@ -18,6 +18,7 @@ export function fakeAlertEventRepository(
     count: async () => 0,
     getById: async (id) =>
       Result.fail<AlertEvent>(AlertEventNotFoundError.withId(id)),
+    findOpenEventByWorkflow: async () => null,
     save: async () => undefined,
     update: async () => undefined,
     ...overrides,

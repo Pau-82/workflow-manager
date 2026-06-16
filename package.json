@@ -9,6 +9,8 @@
     "build": "nx run-many -t build",
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
+    "clean:dist": "node tools/clean-dist.mjs",
+    "typecheck": "node tools/clean-dist.mjs && nx run-many -t typecheck",
     "prisma:generate": "pnpm --filter @org/api exec prisma generate",
     "prisma:migrate": "pnpm --filter @org/api exec prisma migrate dev",
     "prisma:migrate:create": "pnpm --filter @org/api exec prisma migrate dev --create-only",

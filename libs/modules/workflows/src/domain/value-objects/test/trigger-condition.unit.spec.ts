@@ -102,6 +102,46 @@ describe('TriggerCondition', () => {
     });
   });
 
+  describe('capture (snapshot del disparo)', () => {
+    it('threshold: fotografía métrica, operador, umbral y valor observado', () => {
+      const result = TriggerCondition.create({
+        type: 'threshold',
+        metricName: 'cpu',
+        operator: '>',
+        value: 90,
+      });
+      if (result.isSuccess()) {
+        expect(result.value.capture(95)).toEqual({
+          type: 'threshold',
+          metricName: 'cpu',
+          operator: '>',
+          threshold: 90,
+          observedValue: 95,
+        });
+      }
+    });
+
+    it('variance: calcula actualDeviation (% real respecto de la base)', () => {
+      const result = TriggerCondition.create({
+        type: 'variance',
+        baseValue: 1000,
+        deviationPercent: 20,
+        direction: 'below',
+      });
+      if (result.isSuccess()) {
+        // (700 - 1000) / 1000 * 100 = -30
+        expect(result.value.capture(700)).toEqual({
+          type: 'variance',
+          baseValue: 1000,
+          deviationPercent: 20,
+          direction: 'below',
+          observedValue: 700,
+          actualDeviation: -30,
+        });
+      }
+    });
+  });
+
   it('rechaza un tipo de condición desconocido', () => {
     const result = TriggerCondition.create({
       type: 'weird',

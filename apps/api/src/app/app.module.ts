@@ -7,7 +7,11 @@ import {
   ListWorkflowsModule,
   UpdateWorkflowModule,
 } from '@org/workflows';
-import { ListEventHistoryModule, ResolveEventModule } from '@org/alerts';
+import {
+  ListEventHistoryModule,
+  ResolveEventModule,
+  SimulateTriggerModule,
+} from '@org/alerts';
 import { ListNotificationsModule } from '@org/notifications';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -23,6 +27,7 @@ import { TrpcService } from '../trpc/trpc.service';
     DeactivateWorkflowModule,
     ListEventHistoryModule,
     ResolveEventModule,
+    SimulateTriggerModule,
     ListNotificationsModule,
   ],
   controllers: [AppController],

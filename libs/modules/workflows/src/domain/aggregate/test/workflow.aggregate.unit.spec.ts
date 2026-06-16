@@ -87,6 +87,19 @@ describe('Workflow', () => {
         );
       }
     });
+
+    it('captura el contexto del disparo delegando en la condición (Demeter)', () => {
+      const result = Workflow.create(validProps());
+      if (result.isSuccess()) {
+        expect(result.value.captureTriggerContext(95)).toEqual({
+          type: 'threshold',
+          metricName: 'cpu',
+          operator: '>',
+          threshold: 90,
+          observedValue: 95,
+        });
+      }
+    });
   });
 
   describe('reconstitución desde persistencia', () => {

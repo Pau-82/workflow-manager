@@ -1,0 +1,53 @@
+# Requests del caso de uso SimulateTrigger (tRPC MUTATION). El caso central:
+# evalúa el workflow → no-duplicados → crea AlertEvent + notificaciones in-app
+# (atómico, UnitOfWork) → envía emails post-commit (stub que loguea).
+# Requiere REST Client. Levantá la API y corré el seed:  nx serve @org/api  /  pnpm seed
+# Pegá un @workflowId activo (creá+activá uno, o usá uno del seed SIN evento abierto).
+
+@host = http://localhost:3001
+@workflowId = pegar-un-workflow-id-activo
+
+### ✅ Disparar (supera umbral) → triggered:true, duplicate:false, eventId + renderedMessage
+POST {{host}}/trpc/event.simulate
+Content-Type: application/json
+
+{
+  "workflowId": "{{workflowId}}",
+  "observedValue": 95
+}
+
+### ✅ Disparar de nuevo con el evento aún abierto → triggered:true, duplicate:true (no crea otro)
+POST {{host}}/trpc/event.simulate
+Content-Type: application/json
+
+{
+  "workflowId": "{{workflowId}}",
+  "observedValue": 99
+}
+
+### ✅ No dispara (valor por debajo del umbral) → triggered:false (no toca la base)
+POST {{host}}/trpc/event.simulate
+Content-Type: application/json
+
+{
+  "workflowId": "{{workflowId}}",
+  "observedValue": 50
+}
+
+### ❌ workflowId inexistente → 404 NOT_FOUND
+POST {{host}}/trpc/event.simulate
+Content-Type: application/json
+
+{
+  "workflowId": "99999999-9999-4999-8999-999999999999",
+  "observedValue": 95
+}
+
+### ❌ observedValue no finito → 400 (lo frena Zod)
+POST {{host}}/trpc/event.simulate
+Content-Type: application/json
+
+{
+  "workflowId": "{{workflowId}}",
+  "observedValue": "abc"
+}

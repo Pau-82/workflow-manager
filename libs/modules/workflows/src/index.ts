@@ -41,6 +41,9 @@ export * from './application/list-workflows/list-workflows.module.js';
 export * from './application/list-workflows/interface/list-workflows.output.dto.js';
 export * from './application/list-workflows/errors/list-workflows.error.js';
 
+// --- Infraestructura expuesta (capacidad para otros módulos) ---
+export * from './infrastructure/workflow-repository.module.js';
+
 export * from './application/update-workflow/update-workflow.handler.js';
 export * from './application/update-workflow/update-workflow.module.js';
 export * from './application/update-workflow/interface/update-workflow.input.dto.js';

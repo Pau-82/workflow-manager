@@ -2,7 +2,10 @@ import { Result, type LayeredError } from '@org/shared';
 import { WorkflowId } from '../value-objects/workflow-id.vo.js';
 import { WorkflowActivation } from '../value-objects/workflow-activation.vo.js';
 import { WorkflowName } from '../value-objects/workflow-name.vo.js';
-import { TriggerCondition } from '../value-objects/trigger-condition.vo.js';
+import {
+  TriggerCondition,
+  type TriggerContextSnapshot,
+} from '../value-objects/trigger-condition.vo.js';
 import {
   MessageTemplate,
   type RenderValues,
@@ -130,6 +133,14 @@ export class Workflow {
   /** Delega el render en la plantilla. */
   renderMessage(values: RenderValues): string {
     return this._messageTemplate.render(values);
+  }
+
+  /**
+   * Fotografía el contexto del disparo para congelarlo en el evento. Delega en la
+   * condición (Demeter: el exterior pide a la raíz, no navega el TriggerCondition).
+   */
+  captureTriggerContext(observedValue: number): TriggerContextSnapshot {
+    return this._triggerCondition.capture(observedValue);
   }
 
   activate(): void {

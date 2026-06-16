@@ -244,9 +244,15 @@ importers:
       '@nestjs/common':
         specifier: ^11.1.26
         version: 11.1.26(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@org/notifications':
+        specifier: workspace:*
+        version: link:../notifications
       '@org/shared':
         specifier: workspace:*
         version: link:../../shared
+      '@org/workflows':
+        specifier: workspace:*
+        version: link:../workflows
       '@prisma/client':
         specifier: ^7.8.0
         version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3))(typescript@5.9.3)

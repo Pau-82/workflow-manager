@@ -24,6 +24,31 @@ export type TriggerConditionInput =
   | ThresholdConditionInput
   | VarianceConditionInput;
 
+/**
+ * Snapshot CONGELADO del disparo (lo que se guarda en el AlertEvent). Shape
+ * deliberadamente IGUAL al `TriggerContextInput` de alerts: workflows produce el
+ * dato (Ley de Demeter) sin depender de alerts; el handler lo pasa a
+ * `TriggerContext.create`. La compatibilidad es estructural.
+ */
+export interface ThresholdContextSnapshot {
+  type: 'threshold';
+  metricName: string;
+  operator: string;
+  threshold: number;
+  observedValue: number;
+}
+export interface VarianceContextSnapshot {
+  type: 'variance';
+  baseValue: number;
+  deviationPercent: number;
+  direction: string;
+  observedValue: number;
+  actualDeviation: number;
+}
+export type TriggerContextSnapshot =
+  | ThresholdContextSnapshot
+  | VarianceContextSnapshot;
+
 /** Condición de disparo: union discriminada por `type`, con `evaluate()` adentro. */
 export type TriggerCondition = ThresholdTrigger | VarianceTrigger;
 
@@ -80,6 +105,17 @@ export class ThresholdTrigger {
       default:
         return assertNever(this._operator.operator);
     }
+  }
+
+  /** Fotografía el disparo (NO decide si dispara: eso ya lo hizo `evaluate`). */
+  capture(observedValue: number): ThresholdContextSnapshot {
+    return {
+      type: 'threshold',
+      metricName: this._metricName,
+      operator: this._operator.operator,
+      threshold: this._value,
+      observedValue,
+    };
   }
 
   get metricName(): string {
@@ -151,6 +187,18 @@ export class VarianceTrigger {
       default:
         return assertNever(this._direction);
     }
+  }
+
+  /** Fotografía el disparo, calculando la desviación real observada (lógica de dominio). */
+  capture(observedValue: number): VarianceContextSnapshot {
+    return {
+      type: 'variance',
+      baseValue: this._baseValue,
+      deviationPercent: this._deviationPercent,
+      direction: this._direction,
+      observedValue,
+      actualDeviation: this.actualDeviation(observedValue),
+    };
   }
 
   private static isDirection(value: string): value is TriggerDirection {

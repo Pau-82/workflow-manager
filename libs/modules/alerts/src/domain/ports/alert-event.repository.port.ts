@@ -35,6 +35,15 @@ export interface IAlertEventRepository {
   getById(id: string): Promise<Result<AlertEvent, LayeredError>>;
 
   /**
+   * Especulativo (FIND): el evento ABIERTO del workflow, o `null` si no hay.
+   * Implementa la regla de no-duplicados (a lo sumo uno abierto por workflow).
+   */
+  findOpenEventByWorkflow(
+    workflowId: string,
+    tx?: unknown,
+  ): Promise<AlertEvent | null>;
+
+  /**
    * Inserta un evento nuevo. Acepta un cliente transaccional OPACO opcional (`tx`)
    * para participar de un UnitOfWork externo (lo usa SimulateTrigger en el V10).
    */

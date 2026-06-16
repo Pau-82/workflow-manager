@@ -7,7 +7,11 @@ import {
   ListWorkflowsHandler,
   UpdateWorkflowHandler,
 } from '@org/workflows';
-import { ListEventHistoryHandler, ResolveEventHandler } from '@org/alerts';
+import {
+  ListEventHistoryHandler,
+  ResolveEventHandler,
+  SimulateTriggerHandler,
+} from '@org/alerts';
 import { ListNotificationsHandler } from '@org/notifications';
 import { createAppRouter, type AppRouter } from './app.router';
 
@@ -28,6 +32,7 @@ export class TrpcService {
     private readonly deactivateWorkflow: DeactivateWorkflowHandler,
     private readonly listEventHistory: ListEventHistoryHandler,
     private readonly resolveEvent: ResolveEventHandler,
+    private readonly simulateTrigger: SimulateTriggerHandler,
     private readonly listNotifications: ListNotificationsHandler,
   ) {
     this.appRouter = createAppRouter({
@@ -39,6 +44,7 @@ export class TrpcService {
       deactivateWorkflow: this.deactivateWorkflow,
       listEventHistory: this.listEventHistory,
       resolveEvent: this.resolveEvent,
+      simulateTrigger: this.simulateTrigger,
       listNotifications: this.listNotifications,
     });
   }

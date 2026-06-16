@@ -11,6 +11,7 @@ import type {
 } from '../domain/ports/alert-event.repository.port.js';
 import type { TriggerContextInput } from '../domain/value-objects/trigger-context/trigger-context.vo.js';
 import { AlertEventNotFoundError } from '../domain/errors/alert-event-not-found.error.js';
+import { DuplicateOpenEventError } from '../domain/errors/duplicate-open-event.error.js';
 
 /** Cliente transaccional opcional (para participar de un UnitOfWork). */
 type PrismaTransactionClient = Prisma.TransactionClient;
@@ -70,14 +71,46 @@ export class PrismaAlertEventRepository implements IAlertEventRepository {
       PrismaAlertEventRepository.toPersistenceProps(row),
     );
   }
+
+  async findOpenEventByWorkflow(
+    workflowId: string,
+    tx?: unknown,
+  ): Promise<AlertEvent | null> {
+    const db = (tx as PrismaTransactionClient | undefined) ?? this.prisma;
+    const row = await db.alertEvent.findFirst({
+      where: { workflowId, status: 'abierto' },
+    });
+    if (!row) {
+      return null;
+    }
+    const result = AlertEvent.fromPersistence(
+      PrismaAlertEventRepository.toPersistenceProps(row),
+    );
+    if (result.isFailure()) {
+      // Fila corrupta en base: anomalía, no resultado válido.
+      throw result.error;
+    }
+    return result.value;
+  }
   //#endregion
 
   //#region writes
   async save(event: AlertEvent, tx?: unknown): Promise<void> {
     const db = (tx as PrismaTransactionClient | undefined) ?? this.prisma;
-    await db.alertEvent.create({
-      data: PrismaAlertEventRepository.toCreateInput(event),
-    });
+    try {
+      await db.alertEvent.create({
+        data: PrismaAlertEventRepository.toCreateInput(event),
+      });
+    } catch (error) {
+      // Índice único parcial (un abierto por workflow) → P2002 ante carrera.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw DuplicateOpenEventError.forWorkflow(event.workflowId);
+      }
+      throw error;
+    }
   }
 
   async update(event: AlertEvent, tx?: PrismaTransactionClient): Promise<void> {
