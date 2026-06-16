@@ -18,6 +18,14 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
 
+  // CORS para que la web (otro origen en dev) pueda llamar a /trpc. Configurable
+  // por WEB_ORIGIN (coma-separado); default al puerto de Next en desarrollo.
+  const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
+  app.enableCors({
+    origin: webOrigin.split(',').map((o) => o.trim()),
+    methods: ['GET', 'POST', 'OPTIONS'],
+  });
+
   const trpc = app.get(TrpcService);
   const logger = app.get<Logger>(LOGGER);
   const expressApp = app.getHttpAdapter().getInstance();

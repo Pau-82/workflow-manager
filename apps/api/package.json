@@ -2,6 +2,13 @@
   "name": "@org/api",
   "version": "0.0.1",
   "private": true,
+  "exports": {
+    "./app-router": {
+      "types": "./src/trpc/app.router.ts",
+      "import": "./src/trpc/app.router.ts",
+      "default": "./src/trpc/app.router.ts"
+    }
+  },
   "nx": {
     "tags": [
       "type:app",

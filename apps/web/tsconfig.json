@@ -3,7 +3,18 @@
   "compilerOptions": {
     "jsx": "preserve",
     "noEmit": true,
+    // Web es app hoja (nadie la referencia): no necesita ser composite, y así
+    // evitamos el requisito de "tipos portables" en re-exports (p.ej. el cliente
+    // tRPC, cuyo tipo inferido apunta a internals de @trpc).
+    "composite": false,
+    "declarationMap": false,
     "emitDeclarationOnly": false,
+    // El tipo AppRouter arrastra (solo en type-check) el source del backend, que usa
+    // decoradores de NestJS. Alineamos estas opciones con el tsconfig del backend
+    // para que ese source compartido valide igual (el import es type-only: nada de
+    // esto entra al bundle del cliente).
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -47,5 +58,13 @@
     "eslint.config.js",
     "eslint.config.cjs",
     "eslint.config.mjs"
+  ],
+  "references": [
+    {
+      "path": "../api"
+    },
+    {
+      "path": "../../libs/contracts"
+    }
   ]
 }

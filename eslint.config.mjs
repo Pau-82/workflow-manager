@@ -14,7 +14,13 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+          // Excepción puntual: la web consume SOLO el TIPO del router tRPC del host
+          // api (`import type { AppRouter }`), para inferencia end-to-end. Es type-only
+          // (se borra en runtime), así que no crea acoplamiento real web→api.
+          allow: [
+            '^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$',
+            '@org/api/app-router',
+          ],
           depConstraints: [
             // --- Dependencias hacia adentro por tipo de capa ---
             // Las apps (host NestJS / Next) pueden depender de todo lo de adentro.

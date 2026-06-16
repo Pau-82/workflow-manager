@@ -11,6 +11,10 @@ const config = {
     '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  // Resuelve el alias `@/*` (definido en tsconfig.paths) también en los tests.
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
   coverageDirectory: '../../coverage/apps/web',
   testEnvironment: 'jsdom',
 };

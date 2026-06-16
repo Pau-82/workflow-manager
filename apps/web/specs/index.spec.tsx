@@ -1,10 +1,15 @@
 import React from 'react';
-import { render } from '@testing-library/react';
-import Page from '../src/app/page';
+import { render, screen } from '@testing-library/react';
+import { Button } from '../src/components/ui/button';
 
-describe('Page', () => {
-  it('should render successfully', () => {
-    const { baseElement } = render(<Page />);
-    expect(baseElement).toBeTruthy();
+describe('Button', () => {
+  it('renders its label', () => {
+    render(<Button>Guardar</Button>);
+    expect(screen.getByRole('button', { name: 'Guardar' })).toBeTruthy();
+  });
+
+  it('is disabled while loading', () => {
+    render(<Button loading>Guardar</Button>);
+    expect(screen.getByRole('button').hasAttribute('disabled')).toBe(true);
   });
 });
