@@ -1,8 +1,7 @@
-import { Result, type Logger } from '@org/shared';
+import { type Logger } from '@org/shared';
 import { ListWorkflowsHandler } from '../list-workflows.handler.js';
 import { Workflow } from '../../../domain/aggregate/workflow.aggregate.js';
-import { WorkflowNotFoundError } from '../../../domain/errors/workflow-not-found.error.js';
-import type { IWorkflowRepository } from '../../../domain/ports/workflow.repository.port.js';
+import { fakeWorkflowRepository } from '../../../test-support/fake-workflow-repository.js';
 
 const noopLogger: Logger = {
   log: () => undefined,
@@ -26,21 +25,9 @@ function aWorkflow(name: string): Workflow {
   return result.value;
 }
 
-function repositoryReturning(
-  overrides: Partial<IWorkflowRepository>,
-): IWorkflowRepository {
-  return {
-    save: async () => undefined,
-    getById: async (id) => Result.fail<Workflow>(WorkflowNotFoundError.withId(id)),
-    findById: async () => null,
-    list: async () => [],
-    ...overrides,
-  };
-}
-
 describe('ListWorkflowsHandler', () => {
   it('devuelve la lista de workflows como DTOs', async () => {
-    const repository = repositoryReturning({
+    const repository = fakeWorkflowRepository({
       list: async () => [aWorkflow('Alerta A'), aWorkflow('Alerta B')],
     });
     const handler = new ListWorkflowsHandler(repository, noopLogger);
@@ -58,7 +45,8 @@ describe('ListWorkflowsHandler', () => {
   });
 
   it('devuelve una lista vacía cuando no hay workflows', async () => {
-    const repository = repositoryReturning({ list: async () => [] });
+    // El default del fake ya devuelve list → [].
+    const repository = fakeWorkflowRepository();
     const handler = new ListWorkflowsHandler(repository, noopLogger);
 
     const result = await handler.execute();

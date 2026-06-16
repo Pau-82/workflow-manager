@@ -14,19 +14,27 @@ import type {
   WorkflowPersistenceProps,
 } from './interface/workflow.props.js';
 
+/** Configuración editable del workflow (los VOs que define/edita el usuario). */
+interface WorkflowConfig {
+  name: WorkflowName;
+  triggerCondition: TriggerCondition;
+  messageTemplate: MessageTemplate;
+  recipients: readonly Recipient[];
+}
+
 /**
  * Agregado raíz `Workflow`. Modelo rico + Ley de Demeter: el exterior habla con
- * la raíz, nunca navega los VOs internos. Construcción vía Result (no tira).
+ * la raíz, nunca navega los VOs internos. Construcción/edición vía Result (no tira).
  * Internamente todo es VO; los getters exponen primitivos hacia la frontera.
  */
 export class Workflow {
   private constructor(
     private readonly _id: WorkflowId,
-    private readonly _name: WorkflowName,
+    private _name: WorkflowName,
     private _isActive: WorkflowActivation,
-    private readonly _triggerCondition: TriggerCondition,
-    private readonly _messageTemplate: MessageTemplate,
-    private readonly _recipients: readonly Recipient[],
+    private _triggerCondition: TriggerCondition,
+    private _messageTemplate: MessageTemplate,
+    private _recipients: readonly Recipient[],
   ) {}
 
   //#region construction
@@ -48,6 +56,34 @@ export class Workflow {
     props: CreateWorkflowProps,
   ): Result<Workflow, LayeredError> {
     const idResult = WorkflowId.create(idValue);
+    if (idResult.isFailure()) {
+      return Result.fail<Workflow>(idResult.error);
+    }
+    const configResult = Workflow.buildConfig(props);
+    if (configResult.isFailure()) {
+      return Result.fail<Workflow>(configResult.error);
+    }
+    const config = configResult.value;
+    const activation = isActive
+      ? WorkflowActivation.active()
+      : WorkflowActivation.inactive();
+
+    return Result.ok(
+      new Workflow(
+        idResult.value,
+        config.name,
+        activation,
+        config.triggerCondition,
+        config.messageTemplate,
+        config.recipients,
+      ),
+    );
+  }
+
+  /** Construye y valida los VOs de configuración; acumula TODOS los errores. */
+  private static buildConfig(
+    props: CreateWorkflowProps,
+  ): Result<WorkflowConfig, LayeredError> {
     const nameResult = WorkflowName.create(props.name);
     const conditionResult = TriggerCondition.create(props.triggerCondition);
     const templateResult = MessageTemplate.create(props.messageTemplate);
@@ -55,9 +91,7 @@ export class Workflow {
       Recipient.create(recipient),
     );
 
-    // Result.combine acumula TODOS los errores de los VOs (no corta en el primero).
     const combined = Result.combine([
-      idResult,
       nameResult,
       conditionResult,
       templateResult,
@@ -70,25 +104,17 @@ export class Workflow {
     }
 
     if (errors.length > 0) {
-      return Result.fail<Workflow>(
+      return Result.fail<WorkflowConfig>(
         errors.length === 1 ? errors[0] : WorkflowError.invalidComposition(errors),
       );
     }
 
-    const activation = isActive
-      ? WorkflowActivation.active()
-      : WorkflowActivation.inactive();
-
-    return Result.ok(
-      new Workflow(
-        idResult.value,
-        nameResult.value,
-        activation,
-        conditionResult.value,
-        templateResult.value,
-        recipientResults.map((recipient) => recipient.value),
-      ),
-    );
+    return Result.ok<WorkflowConfig>({
+      name: nameResult.value,
+      triggerCondition: conditionResult.value,
+      messageTemplate: templateResult.value,
+      recipients: recipientResults.map((recipient) => recipient.value),
+    });
   }
   //#endregion
 
@@ -112,6 +138,24 @@ export class Workflow {
 
   deactivate(): void {
     this._isActive = WorkflowActivation.inactive();
+  }
+
+  /**
+   * Reconfiguración TOTAL del workflow (name, triggerCondition, messageTemplate,
+   * recipients). Revalida invariantes reconstruyendo los VOs. NO toca id ni
+   * isActive (eso es de activate/deactivate). La mutación pasa siempre por acá.
+   */
+  update(props: CreateWorkflowProps): Result<void, LayeredError> {
+    const configResult = Workflow.buildConfig(props);
+    if (configResult.isFailure()) {
+      return Result.fail<void>(configResult.error);
+    }
+    const config = configResult.value;
+    this._name = config.name;
+    this._triggerCondition = config.triggerCondition;
+    this._messageTemplate = config.messageTemplate;
+    this._recipients = config.recipients;
+    return Result.ok<void>(undefined);
   }
   //#endregion
 

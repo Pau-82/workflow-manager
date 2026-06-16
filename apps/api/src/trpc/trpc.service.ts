@@ -3,6 +3,7 @@ import {
   CreateWorkflowHandler,
   GetWorkflowHandler,
   ListWorkflowsHandler,
+  UpdateWorkflowHandler,
 } from '@org/workflows';
 import { createAppRouter, type AppRouter } from './app.router';
 
@@ -18,11 +19,13 @@ export class TrpcService {
     private readonly createWorkflow: CreateWorkflowHandler,
     private readonly getWorkflow: GetWorkflowHandler,
     private readonly listWorkflows: ListWorkflowsHandler,
+    private readonly updateWorkflow: UpdateWorkflowHandler,
   ) {
     this.appRouter = createAppRouter({
       createWorkflow: this.createWorkflow,
       getWorkflow: this.getWorkflow,
       listWorkflows: this.listWorkflows,
+      updateWorkflow: this.updateWorkflow,
     });
   }
 }

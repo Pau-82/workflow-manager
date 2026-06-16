@@ -13,8 +13,11 @@ export const WORKFLOW_REPOSITORY = Symbol('WorkflowRepository');
  * - `findById` (especulativo): ausencia = resultado válido → `null`.
  */
 export interface IWorkflowRepository {
-  /** Persiste (crea o actualiza) el workflow. */
+  /** Inserta un workflow nuevo. */
   save(workflow: Workflow): Promise<void>;
+
+  /** Actualiza un workflow existente (reemplaza su configuración, incl. recipients). */
+  update(workflow: Workflow): Promise<void>;
 
   /** Afirmativo: devuelve `Result.fail(WorkflowNotFoundError)` si no existe. */
   getById(id: string): Promise<Result<Workflow, LayeredError>>;

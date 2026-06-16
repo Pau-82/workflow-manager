@@ -2,8 +2,7 @@ import { Result, type Logger } from '@org/shared';
 import { GetWorkflowHandler } from '../get-workflow.handler.js';
 import { GET_WORKFLOW_ERRORS } from '../errors/get-workflow.error.js';
 import { Workflow } from '../../../domain/aggregate/workflow.aggregate.js';
-import { WorkflowNotFoundError } from '../../../domain/errors/workflow-not-found.error.js';
-import type { IWorkflowRepository } from '../../../domain/ports/workflow.repository.port.js';
+import { fakeWorkflowRepository } from '../../../test-support/fake-workflow-repository.js';
 
 const noopLogger: Logger = {
   log: () => undefined,
@@ -27,22 +26,10 @@ function aWorkflow(): Workflow {
   return result.value;
 }
 
-function repositoryReturning(
-  overrides: Partial<IWorkflowRepository>,
-): IWorkflowRepository {
-  return {
-    save: async () => undefined,
-    getById: async (id) => Result.fail<Workflow>(WorkflowNotFoundError.withId(id)),
-    findById: async () => null,
-    list: async () => [],
-    ...overrides,
-  };
-}
-
 describe('GetWorkflowHandler', () => {
   it('devuelve el workflow como DTO cuando existe', async () => {
     const workflow = aWorkflow();
-    const repository = repositoryReturning({
+    const repository = fakeWorkflowRepository({
       getById: async () => Result.ok(workflow),
     });
     const handler = new GetWorkflowHandler(repository, noopLogger);
@@ -58,9 +45,8 @@ describe('GetWorkflowHandler', () => {
   });
 
   it('devuelve un error NOT_FOUND cuando no existe', async () => {
-    const repository = repositoryReturning({
-      getById: async (id) => Result.fail<Workflow>(WorkflowNotFoundError.withId(id)),
-    });
+    // El default del fake ya devuelve getById → NotFound.
+    const repository = fakeWorkflowRepository();
     const handler = new GetWorkflowHandler(repository, noopLogger);
 
     const result = await handler.execute({ id: 'inexistente' });

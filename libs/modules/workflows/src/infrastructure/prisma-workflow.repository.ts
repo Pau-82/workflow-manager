@@ -24,6 +24,23 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
     const db = tx ?? this.prisma;
     await db.workflow.create({ data: PrismaWorkflowRepository.toCreateInput(workflow) });
   }
+
+  async update(workflow: Workflow, tx?: PrismaTransactionClient): Promise<void> {
+    const db = tx ?? this.prisma;
+    await db.workflow.update({
+      where: { id: workflow.id },
+      data: {
+        name: workflow.name,
+        messageTemplate: workflow.messageTemplate.raw,
+        ...PrismaWorkflowRepository.flattenCondition(workflow.triggerCondition),
+        // Update total: se reemplazan todos los recipients. isActive NO se toca acá.
+        recipients: {
+          deleteMany: {},
+          create: PrismaWorkflowRepository.toRecipientRows(workflow),
+        },
+      },
+    });
+  }
   //#endregion
 
   //#region reads
@@ -83,13 +100,17 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
       messageTemplate: workflow.messageTemplate.raw,
       ...PrismaWorkflowRepository.flattenCondition(workflow.triggerCondition),
       recipients: {
-        create: workflow.recipients.map((recipient) => ({
-          channel: recipient.channel,
-          destination:
-            recipient.channel === 'email' ? recipient.address : recipient.target,
-        })),
+        create: PrismaWorkflowRepository.toRecipientRows(workflow),
       },
     };
+  }
+
+  private static toRecipientRows(workflow: Workflow) {
+    return workflow.recipients.map((recipient) => ({
+      channel: recipient.channel,
+      destination:
+        recipient.channel === 'email' ? recipient.address : recipient.target,
+    }));
   }
 
   private static flattenCondition(

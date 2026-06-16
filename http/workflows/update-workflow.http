@@ -1,0 +1,59 @@
+# Requests del caso de uso UpdateWorkflow (tRPC MUTATION). Update TOTAL.
+# Requiere la extensión "REST Client" (humao.rest-client): clic en "Send Request".
+# Levantá la API antes:  pnpm exec nx serve @org/api
+# Pegá un id real (de un create) en @id.
+
+@host = http://localhost:3001
+@id = 00000000-0000-4000-8000-000000000000
+
+### ✅ Actualizar (reemplazá @id por uno real) → 200 + DTO actualizado
+POST {{host}}/trpc/workflow.update
+Content-Type: application/json
+
+{
+  "id": "{{id}}",
+  "name": "Alerta CPU (editada)",
+  "triggerCondition": { "type": "variance", "baseValue": 200, "deviationPercent": 25, "direction": "above" },
+  "messageTemplate": "config actualizada",
+  "recipients": [
+    { "channel": "email", "address": "nuevo@empresa.com" }
+  ]
+}
+
+### ✅ Actualizar (threshold) (reemplazá @id por uno real) → 200 + DTO actualizado
+POST {{host}}/trpc/workflow.update
+Content-Type: application/json
+
+{
+  "id": "{{id}}",
+  "name": "Alerta CPU (threshold)",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">=", "value": 80 },
+  "messageTemplate": "umbral actualizado",
+  "recipients": [
+    { "channel": "in-app", "target": "guardia" }
+  ]
+}
+
+### ❌ id inexistente → 404 NOT_FOUND
+POST {{host}}/trpc/workflow.update
+Content-Type: application/json
+
+{
+  "id": "00000000-0000-4000-8000-000000000000",
+  "name": "No existe",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}
+
+### ❌ Inválido por dominio (plantilla rota) → 400 (pasa Zod, lo frena el dominio)
+POST {{host}}/trpc/workflow.update
+Content-Type: application/json
+
+{
+  "id": "{{id}}",
+  "name": "Rota",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "hola {{nombre",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}
