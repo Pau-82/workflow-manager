@@ -19,6 +19,13 @@ export interface IWorkflowRepository {
   /** Actualiza un workflow existente (reemplaza su configuración, incl. recipients). */
   update(workflow: Workflow): Promise<void>;
 
+  /**
+   * Persiste SOLO el estado de activación (isActive) del workflow. Método
+   * enfocado para activate/deactivate: no toca el resto de la config ni churnea
+   * recipients, a diferencia de `update`.
+   */
+  updateActivation(workflow: Workflow): Promise<void>;
+
   /** Afirmativo: devuelve `Result.fail(WorkflowNotFoundError)` si no existe. */
   getById(id: string): Promise<Result<Workflow, LayeredError>>;
 

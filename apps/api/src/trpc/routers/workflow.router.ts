@@ -1,9 +1,11 @@
 import {
+  activateWorkflowSchema,
   createWorkflowSchema,
   getWorkflowSchema,
   updateWorkflowSchema,
 } from '@org/contracts';
 import {
+  ActivateWorkflowHandler,
   CreateWorkflowHandler,
   GetWorkflowHandler,
   ListWorkflowsHandler,
@@ -17,6 +19,7 @@ export interface WorkflowRouterDeps {
   getWorkflow: GetWorkflowHandler;
   listWorkflows: ListWorkflowsHandler;
   updateWorkflow: UpdateWorkflowHandler;
+  activateWorkflow: ActivateWorkflowHandler;
 }
 
 /** Router de workflows. Procedures DELGADOS: validan input, invocan el handler, traducen errores. */
@@ -36,6 +39,16 @@ export function createWorkflowRouter(deps: WorkflowRouterDeps) {
       .input(updateWorkflowSchema)
       .mutation(async ({ input }) => {
         const result = await deps.updateWorkflow.execute(input);
+        if (result.isFailure()) {
+          throw toTRPCError(result.error);
+        }
+        return result.value;
+      }),
+
+    activate: publicProcedure
+      .input(activateWorkflowSchema)
+      .mutation(async ({ input }) => {
+        const result = await deps.activateWorkflow.execute(input);
         if (result.isFailure()) {
           throw toTRPCError(result.error);
         }

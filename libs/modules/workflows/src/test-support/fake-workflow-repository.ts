@@ -16,6 +16,7 @@ export function fakeWorkflowRepository(
   return {
     save: async () => undefined,
     update: async () => undefined,
+    updateActivation: async () => undefined,
     getById: async (id) => Result.fail<Workflow>(WorkflowNotFoundError.withId(id)),
     findById: async () => null,
     list: async () => [],

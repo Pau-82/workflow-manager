@@ -41,6 +41,17 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
       },
     });
   }
+
+  async updateActivation(
+    workflow: Workflow,
+    tx?: PrismaTransactionClient,
+  ): Promise<void> {
+    const db = tx ?? this.prisma;
+    await db.workflow.update({
+      where: { id: workflow.id },
+      data: { isActive: workflow.isActive },
+    });
+  }
   //#endregion
 
   //#region reads

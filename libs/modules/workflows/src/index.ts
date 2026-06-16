@@ -46,3 +46,9 @@ export * from './application/update-workflow/update-workflow.module.js';
 export * from './application/update-workflow/interface/update-workflow.input.dto.js';
 export * from './application/update-workflow/interface/update-workflow.output.dto.js';
 export * from './application/update-workflow/errors/update-workflow.error.js';
+
+export * from './application/activate-workflow/activate-workflow.handler.js';
+export * from './application/activate-workflow/activate-workflow.module.js';
+export * from './application/activate-workflow/interface/activate-workflow.input.dto.js';
+export * from './application/activate-workflow/interface/activate-workflow.output.dto.js';
+export * from './application/activate-workflow/errors/activate-workflow.error.js';
