@@ -1,5 +1,28 @@
-// Public API del bounded context `workflows`.
-// Se completa en la Etapa 2 (dominio) y siguientes:
-//   export * from './domain/workflow.aggregate.js';
-//   export * from './application/...';
-export {};
+// Public API del módulo `workflows`.
+
+// --- Dominio ---
+export * from './domain/aggregate/workflow.aggregate.js';
+export * from './domain/aggregate/interface/workflow.props.js';
+export * from './domain/value-objects/workflow-id.vo.js';
+export * from './domain/value-objects/workflow-activation.vo.js';
+export * from './domain/value-objects/workflow-name.vo.js';
+export * from './domain/value-objects/comparison-operator.vo.js';
+export * from './domain/value-objects/trigger-condition.vo.js';
+export * from './domain/value-objects/message-template.vo.js';
+export * from './domain/value-objects/recipient.vo.js';
+export * from './domain/ports/workflow.repository.port.js';
+export * from './domain/errors/workflow-name.error.js';
+export * from './domain/errors/comparison-operator.error.js';
+export * from './domain/errors/trigger-condition.error.js';
+export * from './domain/errors/message-template.error.js';
+export * from './domain/errors/recipient.error.js';
+export * from './domain/errors/workflow.error.js';
+export * from './domain/errors/workflow-not-found.error.js';
+export * from './domain/errors/workflow-id.error.js';
+
+// --- Aplicación ---
+export * from './application/create-workflow/create-workflow.handler.js';
+export * from './application/create-workflow/create-workflow.module.js';
+export * from './application/create-workflow/interface/create-workflow.input.dto.js';
+export * from './application/create-workflow/interface/create-workflow.output.dto.js';
+export * from './application/create-workflow/errors/create-workflow.error.js';

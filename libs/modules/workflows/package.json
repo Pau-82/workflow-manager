@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "tags": ["type:feature", "scope:workflows"]
+    "tags": [
+      "type:feature",
+      "scope:workflows"
+    ]
   },
   "type": "module",
   "main": "./src/index.ts",
@@ -16,5 +19,10 @@
     },
     "./package.json": "./package.json"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@nestjs/common": "^11.1.26",
+    "@org/shared": "workspace:*",
+    "@prisma/client": "^7.8.0",
+    "reflect-metadata": "^0.1.14"
+  }
 }

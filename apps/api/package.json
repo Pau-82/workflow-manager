@@ -90,13 +90,19 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@org/contracts": "workspace:*",
+    "@org/shared": "workspace:*",
+    "@org/workflows": "workspace:*",
     "@prisma/client": "^7.8.0",
+    "@trpc/server": "^11.17.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@nestjs/testing": "^11.0.0",
+    "@types/pg": "^8.20.0",
     "prisma": "^7.8.0"
   }
 }

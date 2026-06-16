@@ -2,3 +2,5 @@
 // Se importa vía `@org/shared/infrastructure`, separado del barrel de dominio
 // para que el frontend no bundlee NestJS.
 export * from './logger/index.js';
+export * from './prisma/prisma.service.js';
+export * from './prisma/prisma.module.js';

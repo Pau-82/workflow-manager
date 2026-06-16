@@ -22,3 +22,6 @@ export interface Logger {
   /** Normaliza y loguea cualquier error desconocido (Error nativo, string, etc.). */
   logUnknownError(error: unknown, callerContext?: string): void;
 }
+
+/** Token de inyección del puerto (DI por interfaz en NestJS). */
+export const LOGGER = Symbol('Logger');

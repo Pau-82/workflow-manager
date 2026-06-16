@@ -1,0 +1,181 @@
+# Requests del caso de uso CreateWorkflow (tRPC).
+# Requiere la extensión "REST Client" (humao.rest-client): clic en "Send Request".
+# Levantá la API antes:  pnpm exec nx serve @org/api   (o  pnpm dev)
+#
+# NOTA: el messageTemplate del dominio admite placeholders {{variable}}, pero REST
+# Client interpreta {{ }} como SUS variables. Por eso los ejemplos válidos usan
+# texto plano (el render de {{ }} se ejerce en SimulateTrigger). El caso "plantilla
+# rota" usa {{ a propósito para que lo rechace el dominio.
+
+@host = http://localhost:3001
+
+############################################################
+# ✅ Casos válidos (200 + DTO; isActive = false)
+############################################################
+
+### Crear (threshold)
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Alerta CPU",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "CPU por encima del umbral",
+  "recipients": [
+    { "channel": "in-app", "target": "soporte" }
+  ]
+}
+
+### Crear (variance + varios destinatarios)
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Desvio de ventas",
+  "triggerCondition": { "type": "variance", "baseValue": 1000, "deviationPercent": 15, "direction": "below" },
+  "messageTemplate": "Ventas con desvio significativo",
+  "recipients": [
+    { "channel": "email", "address": "ops@empresa.com" },
+    { "channel": "in-app", "target": "equipo-ventas" }
+  ]
+}
+
+############################################################
+# ❌ Errores de VALIDACIÓN (Zod) → 400, data.zodError.fieldErrors
+############################################################
+
+### Nombre vacío + sin destinatarios
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "ok",
+  "recipients": []
+}
+
+### Nombre demasiado largo (> 100)
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}
+
+### messageTemplate demasiado largo (> 100)
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Plantilla larga",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}
+
+### Operador de comparación inválido
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Operador malo",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": "=>", "value": 90 },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}
+
+### Tipo de trigger desconocido (discriminated union)
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Tipo raro",
+  "triggerCondition": { "type": "weird", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}
+
+### Variance con baseValue = 0 (división por cero)
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Base cero",
+  "triggerCondition": { "type": "variance", "baseValue": 0, "deviationPercent": 10, "direction": "any" },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}
+
+### Variance con deviationPercent > 500
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Desvio enorme",
+  "triggerCondition": { "type": "variance", "baseValue": 100, "deviationPercent": 600, "direction": "any" },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}
+
+### Variance con dirección inválida
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Direccion mala",
+  "triggerCondition": { "type": "variance", "baseValue": 100, "deviationPercent": 10, "direction": "sideways" },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}
+
+### Email con formato inválido
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Email malo",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "email", "address": "no-es-email" } ]
+}
+
+### Destino in-app vacío
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Target vacio",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "in-app", "target": "   " } ]
+}
+
+### Canal de destinatario desconocido (discriminated union)
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Canal raro",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "ok",
+  "recipients": [ { "channel": "sms", "target": "+5491100000000" } ]
+}
+
+############################################################
+# ❌ Error de DOMINIO (pasa Zod, lo frena el dominio) → 400
+############################################################
+
+### Plantilla con llaves {{ }} desbalanceadas
+POST {{host}}/trpc/workflow.create
+Content-Type: application/json
+
+{
+  "name": "Plantilla rota",
+  "triggerCondition": { "type": "threshold", "metricName": "cpu", "operator": ">", "value": 90 },
+  "messageTemplate": "hola {{nombre",
+  "recipients": [ { "channel": "in-app", "target": "soporte" } ]
+}

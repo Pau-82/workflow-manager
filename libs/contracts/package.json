@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "tags": ["type:contracts", "scope:contracts"]
+    "tags": [
+      "type:contracts",
+      "scope:contracts"
+    ]
   },
   "type": "module",
   "main": "./src/index.ts",
@@ -16,5 +19,7 @@
     },
     "./package.json": "./package.json"
   },
-  "dependencies": {}
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
 }
