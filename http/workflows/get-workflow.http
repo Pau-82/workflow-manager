@@ -1,0 +1,16 @@
+# Requests del caso de uso GetWorkflow (tRPC QUERY).
+# Requiere la extensión "REST Client" (humao.rest-client): clic en "Send Request".
+# Levantá la API antes:  pnpm exec nx serve @org/api
+#
+# OJO: el input de una QUERY tRPC va URL-ENCODEADO en ?input=
+#   %7B%22id%22%3A%22...%22%7D  ==  {"id":"..."}
+# Pegá un id real (devuelto por un create) en @id.
+
+@host = http://localhost:3001
+@id = 00000000-0000-4000-8000-000000000000
+
+### ✅ Get por id (reemplazá @id por uno real) → 200 + DTO del workflow
+GET {{host}}/trpc/workflow.getById?input=%7B%22id%22%3A%22{{id}}%22%7D
+
+### ❌ Get por id inexistente → 404 NOT_FOUND
+GET {{host}}/trpc/workflow.getById?input=%7B%22id%22%3A%2200000000-0000-4000-8000-000000000000%22%7D

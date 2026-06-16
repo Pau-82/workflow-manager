@@ -5,7 +5,7 @@ import {
   WORKFLOW_REPOSITORY,
   type IWorkflowRepository,
 } from '../../domain/ports/workflow.repository.port.js';
-import { CreateWorkflowMapper } from './mappers/workflow.mapper.js';
+import { WorkflowMapper } from '../mappers/workflow.mapper.js';
 import { CreateWorkflowError } from './errors/create-workflow.error.js';
 import { CONTEXT } from './constants/create-workflow.constants.js';
 import type { CreateWorkflowInput } from './interface/create-workflow.input.dto.js';
@@ -23,7 +23,7 @@ export class CreateWorkflowHandler {
     input: CreateWorkflowInput,
   ): Promise<Result<CreateWorkflowOutput, CreateWorkflowError>> {
     
-    const definition = this.defineWorkflow(input);
+    const definition = this.createWorkflow(input);
     if (definition.isFailure()) {
       return Result.fail<CreateWorkflowOutput, CreateWorkflowError>(
         definition.error,
@@ -45,19 +45,22 @@ export class CreateWorkflowHandler {
   //#region pasos del caso de uso
 
   /** Paso 1 — define el workflow a partir del input (valida invariantes vía VOs). */
-  private defineWorkflow(
+  private createWorkflow(
     input: CreateWorkflowInput,
   ): Result<Workflow, CreateWorkflowError> {
     this.logger.log('Creating workflow', CONTEXT, { name: input.name });
 
     const result = Workflow.create(input);
+
     if (result.isFailure()) {
       const error = CreateWorkflowError.invalidInput(
         result.error.reason,
         result.error.metadata,
       );
+
       return Result.fail<Workflow, CreateWorkflowError>(error);
     }
+
     return Result.ok<Workflow, CreateWorkflowError>(result.value);
   }
 
@@ -68,16 +71,20 @@ export class CreateWorkflowHandler {
     const result = await Result.executeAsync(() =>
       this.repository.save(workflow),
     );
+
     if (result.isFailure()) {
       const error = CreateWorkflowError.persistenceFailed(result.error.reason);
+
       return Result.fail<void, CreateWorkflowError>(error);
     }
+
     return Result.ok<void, CreateWorkflowError>(undefined);
   }
 
   /** Paso 3 — presenta el workflow creado como DTO de primitivos. */
   private presentCreatedWorkflow(workflow: Workflow): CreateWorkflowOutput {
-    const output = CreateWorkflowMapper.toOutput(workflow);
+    const output = WorkflowMapper.toDto(workflow);
+
     this.logger.log('Workflow created', CONTEXT, { id: output.id });
 
     return output;

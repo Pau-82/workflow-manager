@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 import { PrismaModule, StructuredLoggerModule } from '@org/shared/infrastructure';
 import { WORKFLOW_REPOSITORY } from '../../domain/ports/workflow.repository.port.js';
 import { PrismaWorkflowRepository } from '../../infrastructure/prisma-workflow.repository.js';
-import { CreateWorkflowHandler } from './create-workflow.handler.js';
+import { GetWorkflowHandler } from './get-workflow.handler.js';
 
 
 @Module({
   imports: [PrismaModule, StructuredLoggerModule],
   providers: [
-    CreateWorkflowHandler,
+    GetWorkflowHandler,
     { provide: WORKFLOW_REPOSITORY, useClass: PrismaWorkflowRepository },
   ],
-  exports: [CreateWorkflowHandler],
+  exports: [GetWorkflowHandler],
 })
-export class CreateWorkflowModule {}
+export class GetWorkflowModule {}

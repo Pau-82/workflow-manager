@@ -21,8 +21,17 @@ export * from './domain/errors/workflow-not-found.error.js';
 export * from './domain/errors/workflow-id.error.js';
 
 // --- Aplicación ---
+export * from './application/mappers/interface/workflow.dto.js';
+export * from './application/mappers/workflow.mapper.js';
+
 export * from './application/create-workflow/create-workflow.handler.js';
 export * from './application/create-workflow/create-workflow.module.js';
 export * from './application/create-workflow/interface/create-workflow.input.dto.js';
 export * from './application/create-workflow/interface/create-workflow.output.dto.js';
 export * from './application/create-workflow/errors/create-workflow.error.js';
+
+export * from './application/get-workflow/get-workflow.handler.js';
+export * from './application/get-workflow/get-workflow.module.js';
+export * from './application/get-workflow/interface/get-workflow.input.dto.js';
+export * from './application/get-workflow/interface/get-workflow.output.dto.js';
+export * from './application/get-workflow/errors/get-workflow.error.js';
