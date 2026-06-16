@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { Result, type LayeredError } from '@org/shared';
 import { PrismaService } from '@org/shared/infrastructure';
 import { AlertEvent } from '../domain/aggregate/alert-event.aggregate.js';
 import type { AlertEventPersistenceProps } from '../domain/aggregate/interface/alert-event.props.js';
@@ -9,6 +10,7 @@ import type {
   IAlertEventRepository,
 } from '../domain/ports/alert-event.repository.port.js';
 import type { TriggerContextInput } from '../domain/value-objects/trigger-context/trigger-context.vo.js';
+import { AlertEventNotFoundError } from '../domain/errors/alert-event-not-found.error.js';
 
 /** Cliente transaccional opcional (para participar de un UnitOfWork). */
 type PrismaTransactionClient = Prisma.TransactionClient;
@@ -52,6 +54,35 @@ export class PrismaAlertEventRepository implements IAlertEventRepository {
     const db = tx ?? this.prisma;
     return db.alertEvent.count({
       where: PrismaAlertEventRepository.toWhere(filters),
+    });
+  }
+
+  async getById(
+    id: string,
+    tx?: PrismaTransactionClient,
+  ): Promise<Result<AlertEvent, LayeredError>> {
+    const db = tx ?? this.prisma;
+    const row = await db.alertEvent.findUnique({ where: { id } });
+    if (!row) {
+      return Result.fail<AlertEvent>(AlertEventNotFoundError.withId(id));
+    }
+    return AlertEvent.fromPersistence(
+      PrismaAlertEventRepository.toPersistenceProps(row),
+    );
+  }
+  //#endregion
+
+  //#region writes
+  async update(event: AlertEvent, tx?: PrismaTransactionClient): Promise<void> {
+    const db = tx ?? this.prisma;
+    await db.alertEvent.update({
+      where: { id: event.id },
+      // De un evento sólo cambia su estado de resolución; el resto es inmutable.
+      data: {
+        status: event.status,
+        resolvedAt: event.resolvedAt,
+        resolutionNote: event.resolutionNote,
+      },
     });
   }
   //#endregion

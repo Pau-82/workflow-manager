@@ -1,0 +1,48 @@
+# Requests del caso de uso ResolveEvent (tRPC MUTATION). Resuelve un evento abierto.
+# Requiere la extensión "REST Client" (humao.rest-client): clic en "Send Request".
+# Levantá la API y corré el seed antes:  pnpm exec nx serve @org/api  /  pnpm seed
+# Tomá un @eventId real con event.history?input={"status":"abierto"}.
+
+@host = http://localhost:3001
+@eventId = pegar-un-id-abierto-del-history
+
+### ✅ Resolver con nota (la nota solo se deja al resolver) → 200 + DTO status="resuelto"
+POST {{host}}/trpc/event.resolve
+Content-Type: application/json
+
+{
+  "eventId": "{{eventId}}",
+  "note": "Incidente atendido por la guardia"
+}
+
+### ✅ Resolver sin nota → 200 (resolutionNote queda null)
+POST {{host}}/trpc/event.resolve
+Content-Type: application/json
+
+{
+  "eventId": "{{eventId}}"
+}
+
+### ❌ Resolver uno ya resuelto → 409 CONFLICT (alreadyResolved)
+POST {{host}}/trpc/event.resolve
+Content-Type: application/json
+
+{
+  "eventId": "{{eventId}}"
+}
+
+### ❌ eventId inexistente → 404 NOT_FOUND
+POST {{host}}/trpc/event.resolve
+Content-Type: application/json
+
+{
+  "eventId": "99999999-9999-4999-8999-999999999999"
+}
+
+### ❌ eventId vacío → 400 (lo frena Zod: min(1))
+POST {{host}}/trpc/event.resolve
+Content-Type: application/json
+
+{
+  "eventId": ""
+}

@@ -18,4 +18,6 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: 'test-output/jest/coverage',
+  // Scaffold aún sin casos de uso (se llena en su vertical); no falla por no tener specs.
+  passWithNoTests: true,
 };

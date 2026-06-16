@@ -1,4 +1,4 @@
-import type { AlertEventStatus } from '../../../domain/aggregate/alert-event.aggregate.js';
+import type { AlertEventStatus } from '../../../domain/value-objects/resolution/resolution.vo.js';
 
 /** Input del caso de uso: filtros opcionales y combinables + paginación offset. */
 export interface ListEventHistoryInput {

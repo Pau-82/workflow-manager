@@ -58,4 +58,25 @@ export default [
       'no-restricted-imports': 'off',
     },
   },
+
+  // Los VOs usan constructores privados vacíos (factory-only: nacen vía create/open)
+  // y, en uniones discriminadas, comparten la firma de un método aunque alguna
+  // variante ignore un parámetro (prefijo `_`).
+  {
+    files: ['**/*.vo.ts'],
+    rules: {
+      '@typescript-eslint/no-empty-function': [
+        'error',
+        { allow: ['private-constructors'] },
+      ],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
 ];

@@ -1,5 +1,5 @@
 import type { TriggerContextInput } from '../../../domain/value-objects/trigger-context/trigger-context.vo.js';
-import type { AlertEventStatus } from '../../../domain/aggregate/alert-event.aggregate.js';
+import type { AlertEventStatus } from '../../../domain/value-objects/resolution/resolution.vo.js';
 
 /**
  * DTO plano del evento (primitivos, preserva el discriminante del triggerContext).

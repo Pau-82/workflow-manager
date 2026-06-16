@@ -5,16 +5,15 @@ import {
   TriggerContext,
   type TriggerContextInput,
 } from '../value-objects/trigger-context/trigger-context.vo.js';
+import {
+  Resolution,
+  type AlertEventStatus,
+} from '../value-objects/resolution/resolution.vo.js';
 import { AlertEventError } from '../errors/alert-event.error.js';
 import type {
   CreateAlertEventProps,
   AlertEventPersistenceProps,
 } from './interface/alert-event.props.js';
-
-const MAX_RESOLUTION_NOTE_LENGTH = 300;
-
-export const ALERT_EVENT_STATUSES = ['abierto', 'resuelto'] as const;
-export type AlertEventStatus = (typeof ALERT_EVENT_STATUSES)[number];
 
 /** Snapshot crudo común que arma/valida los VOs internos del evento. */
 interface AlertEventSnapshot {
@@ -24,10 +23,10 @@ interface AlertEventSnapshot {
 
 /**
  * Agregado raíz `AlertEvent`: el hecho histórico de que un workflow disparó. Es un
- * snapshot auto-contenido (referencia al workflow SOLO por id, no lo embebe) e
- * inmutable salvo por la transición de resolución (la agrega el Vertical 8).
- * Construcción/reconstitución vía Result (no tira). Internamente VOs; los getters
- * exponen primitivos hacia la frontera.
+ * snapshot auto-contenido (referencia al workflow SOLO por id, no lo embebe). El
+ * estado de resolución vive en el VO `Resolution` (unión Open|Resolved), que hace
+ * la invariante "resuelto ⇒ tiene fecha" estructuralmente imposible de violar.
+ * Construcción/reconstitución vía Result (no tira). Los getters exponen primitivos.
  */
 export class AlertEvent {
   private constructor(
@@ -36,9 +35,7 @@ export class AlertEvent {
     private readonly _triggeredAt: Date,
     private readonly _triggerContext: TriggerContext,
     private readonly _renderedMessage: string,
-    private _status: AlertEventStatus,
-    private _resolvedAt: Date | null,
-    private _resolutionNote: string | null,
+    private _resolution: Resolution,
   ) {}
 
   //#region construction
@@ -48,9 +45,7 @@ export class AlertEvent {
       AlertEventId.generate().value,
       props.workflowId,
       props.triggeredAt ?? new Date(),
-      'abierto',
-      null,
-      null,
+      { status: 'abierto', resolvedAt: null, note: null },
       props,
     );
   }
@@ -63,9 +58,7 @@ export class AlertEvent {
       raw.id,
       raw.workflowId,
       raw.triggeredAt,
-      raw.status,
-      raw.resolvedAt,
-      raw.resolutionNote,
+      { status: raw.status, resolvedAt: raw.resolvedAt, note: raw.resolutionNote },
       raw,
     );
   }
@@ -75,16 +68,20 @@ export class AlertEvent {
     idValue: string,
     workflowIdValue: string,
     triggeredAt: Date,
-    status: string,
-    resolvedAt: Date | null,
-    resolutionNote: string | null,
+    resolution: { status: string; resolvedAt: Date | null; note: string | null },
     snapshot: AlertEventSnapshot,
   ): Result<AlertEvent, LayeredError> {
     const idResult = AlertEventId.create(idValue);
     const workflowRefResult = WorkflowReference.create(workflowIdValue);
     const contextResult = TriggerContext.create(snapshot.triggerContext);
+    const resolutionResult = Resolution.create(resolution);
 
-    const combined = Result.combine([idResult, workflowRefResult, contextResult]);
+    const combined = Result.combine([
+      idResult,
+      workflowRefResult,
+      contextResult,
+      resolutionResult,
+    ]);
     const errors: LayeredError[] = [...combined.errors];
 
     const renderedMessage = (snapshot.renderedMessage ?? '').trim();
@@ -94,26 +91,6 @@ export class AlertEvent {
 
     if (!AlertEvent.isValidDate(triggeredAt)) {
       errors.push(AlertEventError.invalidTriggeredAt());
-    }
-
-    const normalizedNote = AlertEvent.normalizeNote(resolutionNote);
-    if (normalizedNote && normalizedNote.length > MAX_RESOLUTION_NOTE_LENGTH) {
-      errors.push(AlertEventError.resolutionNoteTooLong(MAX_RESOLUTION_NOTE_LENGTH));
-    }
-
-    if (!AlertEvent.isValidStatus(status)) {
-      errors.push(
-        AlertEventError.invalidStatus(status, ALERT_EVENT_STATUSES),
-      );
-    } else {
-      const consistency = AlertEvent.checkResolutionConsistency(
-        status,
-        resolvedAt,
-        normalizedNote,
-      );
-      if (consistency) {
-        errors.push(consistency);
-      }
     }
 
     if (errors.length > 0) {
@@ -129,42 +106,28 @@ export class AlertEvent {
         triggeredAt,
         contextResult.value,
         renderedMessage,
-        status as AlertEventStatus,
-        resolvedAt,
-        normalizedNote,
+        resolutionResult.value,
       ),
     );
-  }
-
-  private static checkResolutionConsistency(
-    status: AlertEventStatus,
-    resolvedAt: Date | null,
-    resolutionNote: string | null,
-  ): LayeredError | null {
-    if (status === 'resuelto' && !resolvedAt) {
-      return AlertEventError.inconsistentResolution(
-        'A resolved event must have a resolvedAt date.',
-      );
-    }
-    if (status === 'abierto' && (resolvedAt || resolutionNote)) {
-      return AlertEventError.inconsistentResolution(
-        'An open event cannot have resolvedAt or resolutionNote.',
-      );
-    }
-    return null;
-  }
-
-  private static isValidStatus(value: string): value is AlertEventStatus {
-    return (ALERT_EVENT_STATUSES as readonly string[]).includes(value);
   }
 
   private static isValidDate(value: Date): boolean {
     return value instanceof Date && !Number.isNaN(value.getTime());
   }
+  //#endregion
 
-  private static normalizeNote(note: string | null): string | null {
-    const trimmed = (note ?? '').trim();
-    return trimmed.length === 0 ? null : trimmed;
+  //#region behavior
+  /**
+   * Resuelve el evento, con nota opcional. Delega la transición en el VO Resolution
+   * (que rechaza resolver uno ya resuelto y valida la nota); el agregado no re-valida.
+   */
+  resolve(note?: string | null): Result<void, LayeredError> {
+    const result = this._resolution.resolve(note);
+    if (result.isFailure()) {
+      return Result.fail<void>(result.error);
+    }
+    this._resolution = result.value;
+    return Result.ok<void>(undefined);
   }
   //#endregion
 
@@ -185,13 +148,13 @@ export class AlertEvent {
     return this._renderedMessage;
   }
   get status(): AlertEventStatus {
-    return this._status;
+    return this._resolution.status;
   }
   get resolvedAt(): Date | null {
-    return this._resolvedAt;
+    return this._resolution.resolvedAt;
   }
   get resolutionNote(): string | null {
-    return this._resolutionNote;
+    return this._resolution.note;
   }
   //#endregion
 }
