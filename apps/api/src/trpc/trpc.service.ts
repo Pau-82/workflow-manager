@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateWorkflowHandler, GetWorkflowHandler } from '@org/workflows';
+import {
+  CreateWorkflowHandler,
+  GetWorkflowHandler,
+  ListWorkflowsHandler,
+} from '@org/workflows';
 import { createAppRouter, type AppRouter } from './app.router';
 
 /**
@@ -13,10 +17,12 @@ export class TrpcService {
   constructor(
     private readonly createWorkflow: CreateWorkflowHandler,
     private readonly getWorkflow: GetWorkflowHandler,
+    private readonly listWorkflows: ListWorkflowsHandler,
   ) {
     this.appRouter = createAppRouter({
       createWorkflow: this.createWorkflow,
       getWorkflow: this.getWorkflow,
+      listWorkflows: this.listWorkflows,
     });
   }
 }

@@ -21,4 +21,7 @@ export interface IWorkflowRepository {
 
   /** Especulativo: devuelve `null` si no existe. */
   findById(id: string): Promise<Workflow | null>;
+
+  /** Lista simple: todos los workflows. */
+  list(): Promise<Workflow[]>;
 }

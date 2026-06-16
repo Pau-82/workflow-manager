@@ -1,11 +1,16 @@
 import { createWorkflowSchema, getWorkflowSchema } from '@org/contracts';
-import { CreateWorkflowHandler, GetWorkflowHandler } from '@org/workflows';
+import {
+  CreateWorkflowHandler,
+  GetWorkflowHandler,
+  ListWorkflowsHandler,
+} from '@org/workflows';
 import { publicProcedure, router } from '../trpc';
 import { toTRPCError } from '../error-formatter';
 
 export interface WorkflowRouterDeps {
   createWorkflow: CreateWorkflowHandler;
   getWorkflow: GetWorkflowHandler;
+  listWorkflows: ListWorkflowsHandler;
 }
 
 /** Router de workflows. Procedures DELGADOS: validan input, invocan el handler, traducen errores. */
@@ -30,5 +35,13 @@ export function createWorkflowRouter(deps: WorkflowRouterDeps) {
         }
         return result.value;
       }),
+
+    list: publicProcedure.query(async () => {
+      const result = await deps.listWorkflows.execute();
+      if (result.isFailure()) {
+        throw toTRPCError(result.error);
+      }
+      return result.value;
+    }),
   });
 }

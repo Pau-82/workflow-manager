@@ -1,6 +1,5 @@
 import { Result, type Logger } from '@org/shared';
-import { GetWorkflowHandler } from '../get-workflow.handler.js';
-import { GET_WORKFLOW_ERRORS } from '../errors/get-workflow.error.js';
+import { ListWorkflowsHandler } from '../list-workflows.handler.js';
 import { Workflow } from '../../../domain/aggregate/workflow.aggregate.js';
 import { WorkflowNotFoundError } from '../../../domain/errors/workflow-not-found.error.js';
 import type { IWorkflowRepository } from '../../../domain/ports/workflow.repository.port.js';
@@ -14,9 +13,9 @@ const noopLogger: Logger = {
   logUnknownError: () => undefined,
 };
 
-function aWorkflow(): Workflow {
+function aWorkflow(name: string): Workflow {
   const result = Workflow.create({
-    name: 'Alerta CPU',
+    name,
     triggerCondition: { type: 'threshold', metricName: 'cpu', operator: '>', value: 90 },
     messageTemplate: 'ok',
     recipients: [{ channel: 'in-app', target: 'soporte' }],
@@ -39,35 +38,34 @@ function repositoryReturning(
   };
 }
 
-describe('GetWorkflowHandler', () => {
-  it('devuelve el workflow como DTO cuando existe', async () => {
-    const workflow = aWorkflow();
+describe('ListWorkflowsHandler', () => {
+  it('devuelve la lista de workflows como DTOs', async () => {
     const repository = repositoryReturning({
-      getById: async () => Result.ok(workflow),
+      list: async () => [aWorkflow('Alerta A'), aWorkflow('Alerta B')],
     });
-    const handler = new GetWorkflowHandler(repository, noopLogger);
+    const handler = new ListWorkflowsHandler(repository, noopLogger);
 
-    const result = await handler.execute({ id: workflow.id });
+    const result = await handler.execute();
 
     expect(result.isSuccess()).toBe(true);
     if (result.isSuccess()) {
-      expect(result.value.id).toBe(workflow.id);
-      expect(result.value.name).toBe('Alerta CPU');
-      expect(result.value.triggerCondition.type).toBe('threshold');
+      expect(result.value.items).toHaveLength(2);
+      expect(result.value.items.map((w) => w.name)).toEqual([
+        'Alerta A',
+        'Alerta B',
+      ]);
     }
   });
 
-  it('devuelve un error NOT_FOUND cuando no existe', async () => {
-    const repository = repositoryReturning({
-      getById: async (id) => Result.fail<Workflow>(WorkflowNotFoundError.withId(id)),
-    });
-    const handler = new GetWorkflowHandler(repository, noopLogger);
+  it('devuelve una lista vacía cuando no hay workflows', async () => {
+    const repository = repositoryReturning({ list: async () => [] });
+    const handler = new ListWorkflowsHandler(repository, noopLogger);
 
-    const result = await handler.execute({ id: 'inexistente' });
+    const result = await handler.execute();
 
-    expect(result.isFailure()).toBe(true);
-    if (result.isFailure()) {
-      expect(result.error.type).toBe(GET_WORKFLOW_ERRORS.NOT_FOUND);
+    expect(result.isSuccess()).toBe(true);
+    if (result.isSuccess()) {
+      expect(result.value.items).toEqual([]);
     }
   });
 });

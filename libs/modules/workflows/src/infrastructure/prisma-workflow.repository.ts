@@ -55,6 +55,23 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
     }
     return result.value;
   }
+
+  async list(): Promise<Workflow[]> {
+    const rows = await this.prisma.workflow.findMany({
+      include: { recipients: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((row) => {
+      const result = Workflow.fromPersistence(
+        PrismaWorkflowRepository.toPersistenceProps(row),
+      );
+      if (result.isFailure()) {
+        // Fila corrupta en base: anomalía, no resultado válido.
+        throw result.error;
+      }
+      return result.value;
+    });
+  }
   //#endregion
 
   //#region mapping (modelo Prisma <-> agregado)

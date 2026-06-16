@@ -1,0 +1,8 @@
+# Requests del caso de uso ListWorkflows (tRPC QUERY, sin input).
+# Requiere la extensión "REST Client" (humao.rest-client): clic en "Send Request".
+# Levantá la API antes:  pnpm exec nx serve @org/api
+
+@host = http://localhost:3001
+
+### ✅ Listar todos los workflows → 200 + { items: [...] }
+GET {{host}}/trpc/workflow.list

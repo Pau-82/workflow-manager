@@ -35,3 +35,8 @@ export * from './application/get-workflow/get-workflow.module.js';
 export * from './application/get-workflow/interface/get-workflow.input.dto.js';
 export * from './application/get-workflow/interface/get-workflow.output.dto.js';
 export * from './application/get-workflow/errors/get-workflow.error.js';
+
+export * from './application/list-workflows/list-workflows.handler.js';
+export * from './application/list-workflows/list-workflows.module.js';
+export * from './application/list-workflows/interface/list-workflows.output.dto.js';
+export * from './application/list-workflows/errors/list-workflows.error.js';
