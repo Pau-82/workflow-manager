@@ -5,8 +5,14 @@
   "nx": {
     "tags": ["type:app", "scope:web"],
     "targets": {
-      "build": { "dependsOn": ["^typecheck"] },
-      "dev": { "dependsOn": ["^typecheck"] }
+      "build": {
+        "dependsOn": ["^typecheck"],
+        "options": { "command": "next build --webpack" }
+      },
+      "dev": {
+        "dependsOn": ["^typecheck"],
+        "options": { "command": "next dev --webpack" }
+      }
     }
   },
   "dependencies": {

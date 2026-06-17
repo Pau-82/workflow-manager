@@ -1,6 +1,7 @@
 import type {
   InputHTMLAttributes,
   SelectHTMLAttributes,
+  TextareaHTMLAttributes,
   ReactNode,
 } from 'react';
 import { cn } from '@/lib/cn';
@@ -61,6 +62,33 @@ export function Field({ label, error, hint, id, className, ...rest }: FieldProps
       <input
         id={id}
         className={cn(controlClasses(Boolean(error)), className)}
+        {...rest}
+      />
+    </FieldShell>
+  );
+}
+
+interface TextareaFieldProps
+  extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  error?: string;
+  hint?: string;
+}
+
+/** Textarea con label y error. */
+export function TextareaField({
+  label,
+  error,
+  hint,
+  id,
+  className,
+  ...rest
+}: TextareaFieldProps) {
+  return (
+    <FieldShell label={label} htmlFor={id} error={error} hint={hint}>
+      <textarea
+        id={id}
+        className={cn(controlClasses(Boolean(error)), 'min-h-20', className)}
         {...rest}
       />
     </FieldShell>
